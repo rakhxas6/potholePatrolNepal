@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaMapPin, FaInfoCircle, FaUpload, FaTimes } from "react-icons/fa";
+import { FaMapPin, FaInfoCircle, FaTimes, FaUserShield } from "react-icons/fa";
 import { db } from "../firebase/config";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import locationData from "../nepal_location.json";
@@ -7,9 +7,9 @@ import UploadToCloudinary from "../cloudinary/UploadToCloudinary";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { toast } from "react-hot-toast";
+import ResponsiblePartyModal from "./ResponsiblePartyModal";
 import "leaflet/dist/leaflet.css";
 
-// 🛠 Fix Leaflet icon issue in React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -30,12 +30,15 @@ export default function ReportForm() {
   const [cityDetails, setCityDetails] = useState("");
   const [description, setDescription] = useState("");
   const [coordinates, setCoordinates] = useState("");
+  const [responsibleParty, setResponsibleParty] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const [showMap, setShowMap] = useState(false);
   const [markerPosition, setMarkerPosition] = useState(null);
-  const fileInputRef = useRef(); // ✅ File input ref
+  const fileInputRef = useRef();
 
   useEffect(() => {
     setProvinces(locationData.provinceList);
@@ -71,12 +74,17 @@ export default function ReportForm() {
       return;
     }
 
+    if (!responsibleParty) {
+      toast.error("Please add the responsible party details.");
+      return;
+    }
+
     setLoading(true);
     let imageURL = "";
 
     try {
       if (file) {
-        imageURL = await UploadToCloudinary(file); // ✅ Save URL
+        imageURL = await UploadToCloudinary(file);
       }
 
       await addDoc(collection(db, "reports"), {
@@ -86,21 +94,23 @@ export default function ReportForm() {
         cityDetails,
         description,
         coordinates,
+        responsibleParty,
         imageURL,
         createdAt: serverTimestamp(),
       });
 
       toast.success("Report submitted successfully!");
 
-      // ✅ Reset all states
+      // Reset state
       setSelectedProvince("");
       setSelectedDistrict("");
       setSelectedMunicipality("");
       setCityDetails("");
       setDescription("");
       setCoordinates("");
+      setResponsibleParty(null);
       setFile(null);
-      fileInputRef.current.value = ""; // ✅ Clear file input
+      fileInputRef.current.value = "";
       setMarkerPosition(null);
     } catch (err) {
       toast.error("Error submitting report. Try again.");
@@ -204,6 +214,41 @@ export default function ReportForm() {
             />
           </div>
 
+          {/* Responsible Party Button */}
+          <div>
+            <label className="font-semibold flex justify-between items-center">
+              Responsible Party
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="text-blue-600 hover:underline text-sm flex items-center gap-1"
+              >
+                <FaUserShield /> {responsibleParty ? "Edit" : "Add"}
+              </button>
+            </label>
+
+            {responsibleParty && (
+              <div className="bg-orange-50 p-4 rounded-xl mt-4 shadow-sm border border-orange-200">
+                <div className="space-y-1 text-sm text-gray-800">
+                  <p>
+                    <span className="font-medium text-gray-600">👤 Name:</span>{" "}
+                    {responsibleParty.name}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-600">🎯 Role:</span>{" "}
+                    {responsibleParty.role}
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-600">
+                      📞 Contact:
+                    </span>{" "}
+                    {responsibleParty.contact}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Description */}
           <div>
             <label className="font-semibold">Description</label>
@@ -267,22 +312,19 @@ export default function ReportForm() {
         </form>
       </div>
 
-      {/* Fullscreen Map Overlay */}
+      {/* Map Overlay */}
       {showMap && (
-        <div className="fixed top-0 left-0 w-[100vw] h-[100vh] z-50 bg-white">
-          {/* Exit Button */}
+        <div className="fixed top-0 left-0 w-full h-full z-50 bg-white">
           <button
-            className="absolute top-4 right-10 text-white bg-red-600 hover:bg-red-700 rounded-full p-3 z-[9999] shadow-lg pointer-events-auto"
+            className="absolute top-4 right-10 text-white bg-red-600 hover:bg-red-700 rounded-full p-3 z-[9999]"
             onClick={() => setShowMap(false)}
           >
             <FaTimes className="text-xl" />
           </button>
-
-          {/* Fullscreen Map */}
           <MapContainer
             center={[27.7172, 85.324]}
             zoom={8}
-            style={{ height: "100%", width: "100%", zIndex: 1 }}
+            style={{ height: "100%", width: "100%" }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -293,6 +335,16 @@ export default function ReportForm() {
           </MapContainer>
         </div>
       )}
+
+      {/* Modal for Responsible Party */}
+      <ResponsiblePartyModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSave={(data) => {
+          setResponsibleParty(data);
+        }}
+        initialData={responsibleParty}
+      />
     </div>
   );
 }

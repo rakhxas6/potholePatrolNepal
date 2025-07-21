@@ -60,9 +60,40 @@ export default function ReportFullPage() {
                   <h4 className="text-lg font-semibold text-gray-800">
                     📍 {report.district}, {report.cityDetails}
                   </h4>
+
                   <p className="text-sm text-gray-600 mt-1">
                     {report.description}
                   </p>
+
+                  {/* Responsible Party Info */}
+                  {report.responsibleParty && (
+                    <div className="bg-orange-50 p-4 rounded-xl mt-4 shadow-sm border border-orange-200">
+                      <h5 className="text-sm font-semibold text-orange-700 mb-2 uppercase tracking-wide">
+                        Responsible Party
+                      </h5>
+                      <div className="space-y-1 text-sm text-gray-800">
+                        <p>
+                          <span className="font-medium text-gray-600">
+                            👤 Name:
+                          </span>{" "}
+                          {report.responsibleParty.name}
+                        </p>
+                        <p>
+                          <span className="font-medium text-gray-600">
+                            🎯 Role:
+                          </span>{" "}
+                          {report.responsibleParty.role}
+                        </p>
+                        <p>
+                          <span className="font-medium text-gray-600">
+                            📞 Contact:
+                          </span>{" "}
+                          {report.responsibleParty.contact}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <span className="text-xs text-gray-400 block mt-2">
                     {report.createdAt?.toDate().toLocaleString()}
                   </span>

@@ -25,21 +25,21 @@ export default function Home() {
       <div className="lg:col-span-1 space-y-6">
         <ReportForm />
 
-        <button
+        {/* <button
           onClick={() => setIsModalOpen(true)}
           className="w-full bg-primary text-white font-medium py-2 rounded-lg hover:bg-orange-600 transition"
         >
           Add Responsible Party
-        </button>
+        </button> */}
 
         <ReportList />
 
         {/* Modal (only shows if open) */}
-        <ResponsiblePartyModal
+        {/* <ResponsiblePartyModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveResponsibleParty}
-        />
+        /> */}
       </div>
     </div>
   );
