@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import { toast, Toaster } from "react-hot-toast";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "leaflet/dist/leaflet.css";
@@ -19,7 +20,7 @@ L.Icon.Default.mergeOptions({
 // ✅ Orange icon for user marker
 const brightOrangeIcon = new L.Icon({
   iconUrl:
-  "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
 
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
@@ -29,42 +30,58 @@ const brightOrangeIcon = new L.Icon({
   shadowSize: [48, 48],
 });
 
-
-
 function UserLocationSetter({ setUserLocation }) {
   const map = useMap();
-  const hasRequestedRef = useRef(false); // ✅ prevent double prompts
+  const [requested, setRequested] = useState(false);
 
-  useEffect(() => {
-    if (hasRequestedRef.current) return;
-    hasRequestedRef.current = true;
-
-    const askPermission = () => {
-      const allow = window.confirm(
-        "Allow access to your location for better map experience?"
-      );
-      if (allow && navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLat = position.coords.latitude;
-            const userLng = position.coords.longitude;
-            map.setView([userLat, userLng], 14); // center map
-            setUserLocation([userLat, userLng]);
-          },
-          (error) => {
-            console.warn("Geolocation error:", error);
-            alert("Could not access your location.");
-          }
+  const handleRequestLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported by your browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        map.setView([latitude, longitude], 14);
+        setUserLocation([latitude, longitude]);
+        toast.success("Location found!");
+        setRequested(true);
+      },
+      (err) => {
+        toast.error(
+          "Failed to get location. Please enable location permissions."
         );
       }
-    };
+    );
+  };
 
-    askPermission();
-  }, [map, setUserLocation]);
+  if (requested) return null;
 
-  return null;
+ return (
+   <button
+     onClick={handleRequestLocation}
+     style={{
+       position: "absolute",
+       top: 10,
+       right: 10,
+       zIndex: 1000,
+       background: "#fb923c", // softer orange
+       color: "#fff",
+       padding: "8px 14px",
+       borderRadius: "10px",
+       border: "none",
+       cursor: "pointer",
+       fontWeight: "bold",
+       boxShadow: "0 4px 8px rgba(251, 146, 60, 0.5)",
+       transition: "background-color 0.3s ease",
+     }}
+     onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f97316")} // slightly darker on hover
+     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fb923c")}
+   >
+     📍 Use My Location
+   </button>
+ );
 }
-
 export default function ReportMap() {
   const [reports, setReports] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
@@ -96,6 +113,42 @@ export default function ReportMap() {
         overflow: "hidden",
       }}
     >
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          // Default options for all toasts
+          className: "rounded-xl bg-gray-900 text-white shadow-lg",
+          style: {
+            padding: "14px 20px",
+            fontWeight: "600",
+            fontSize: "14px",
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: "#22c55e", // Tailwind green-500
+              color: "white",
+            },
+            iconTheme: {
+              primary: "#ffffff",
+              secondary: "#22c55e",
+            },
+          },
+          error: {
+            duration: 6000,
+            style: {
+              background: "#ef4444", // Tailwind red-500
+              color: "white",
+            },
+            iconTheme: {
+              primary: "#ffffff",
+              secondary: "#ef4444",
+            },
+          },
+        }}
+      />
       <MapContainer
         center={[27.7172, 85.324]} // Default to Kathmandu
         zoom={12}
@@ -113,7 +166,23 @@ export default function ReportMap() {
         {/* 🟠 User location marker */}
         {userLocation && (
           <Marker position={userLocation} icon={brightOrangeIcon}>
-            <Popup>Your location</Popup>
+            <Popup>
+              <div
+                style={{
+                  padding: "10px 15px",
+                  borderRadius: "12px",
+                  backgroundColor: "#f97316", // bright orange matching marker
+                  color: "white",
+                  fontWeight: "600",
+                  textAlign: "center",
+                  boxShadow: "0 4px 12px rgba(249, 115, 22, 0.6)",
+                  minWidth: "140px",
+                  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                }}
+              >
+                📍 <span>Your Location</span>
+              </div>
+            </Popup>
           </Marker>
         )}
 

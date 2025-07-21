@@ -149,7 +149,6 @@ export default function ReportForm() {
             style: {
               background: "#22c55e", // Tailwind green-500
               color: "white",
-              boxShadow: "0 4px 14px rgba(34, 197, 94, 0.6)",
             },
             iconTheme: {
               primary: "#ffffff",
@@ -161,7 +160,6 @@ export default function ReportForm() {
             style: {
               background: "#ef4444", // Tailwind red-500
               color: "white",
-              boxShadow: "0 4px 14px rgba(239, 68, 68, 0.6)",
             },
             iconTheme: {
               primary: "#ffffff",
