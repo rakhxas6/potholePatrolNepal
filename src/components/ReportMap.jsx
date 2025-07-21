@@ -1,18 +1,11 @@
-import { useEffect, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  Circle,
-} from "react-leaflet";
+import { useEffect, useState, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import "leaflet/dist/leaflet.css";
 
-// ✅ Fix Leaflet icon bug
+// ✅ Fix Leaflet default icon bug
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -23,23 +16,50 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
+// ✅ Orange icon for user marker
+const brightOrangeIcon = new L.Icon({
+  iconUrl:
+  "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+  iconSize: [30, 48], // slightly larger
+  iconAnchor: [15, 48],
+  popupAnchor: [0, -40],
+  shadowSize: [48, 48],
+});
+
+
+
 function UserLocationSetter({ setUserLocation }) {
   const map = useMap();
+  const hasRequestedRef = useRef(false); // ✅ prevent double prompts
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          map.setView([userLat, userLng], 14); // Center and zoom
-          setUserLocation([userLat, userLng]);
-        },
-        () => {
-          console.warn("Failed to get user location.");
-        }
+    if (hasRequestedRef.current) return;
+    hasRequestedRef.current = true;
+
+    const askPermission = () => {
+      const allow = window.confirm(
+        "Allow access to your location for better map experience?"
       );
-    }
+      if (allow && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            map.setView([userLat, userLng], 14); // center map
+            setUserLocation([userLat, userLng]);
+          },
+          (error) => {
+            console.warn("Geolocation error:", error);
+            alert("Could not access your location.");
+          }
+        );
+      }
+    };
+
+    askPermission();
   }, [map, setUserLocation]);
 
   return null;
@@ -77,7 +97,7 @@ export default function ReportMap() {
       }}
     >
       <MapContainer
-        center={[27.7172, 85.324]} // Kathmandu as default
+        center={[27.7172, 85.324]} // Default to Kathmandu
         zoom={12}
         scrollWheelZoom={true}
         style={{ height: "100%", width: "100%", zIndex: 1 }}
@@ -90,16 +110,14 @@ export default function ReportMap() {
         {/* 🧭 Center to user location */}
         <UserLocationSetter setUserLocation={setUserLocation} />
 
-        {/* 🔵 Show user's location as a blue circle */}
+        {/* 🟠 User location marker */}
         {userLocation && (
-          <Circle
-            center={userLocation}
-            radius={50}
-            pathOptions={{ color: "blue", fillColor: "blue" }}
-          />
+          <Marker position={userLocation} icon={brightOrangeIcon}>
+            <Popup>Your location</Popup>
+          </Marker>
         )}
 
-        {/* 📍 Firestore report markers */}
+        {/* 📍 Report markers from Firestore */}
         {reports.map((report) => {
           const {
             id,
@@ -121,7 +139,7 @@ export default function ReportMap() {
           return (
             <Marker key={id} position={[lat, lng]}>
               <Popup>
-                <div style={{ maxWidth: "200px" }}>
+                <div className="max-w-xs">
                   <strong>{district}</strong>
                   <br />
                   {cityDetails}
@@ -145,12 +163,7 @@ export default function ReportMap() {
                       <img
                         src={imageURL}
                         alt="Report"
-                        style={{
-                          width: "100%",
-                          height: "auto",
-                          display: "block",
-                          objectFit: "cover",
-                        }}
+                        className="w-full sm:w-32 h-32 object-cover rounded-lg block"
                       />
                     </div>
                   )}
