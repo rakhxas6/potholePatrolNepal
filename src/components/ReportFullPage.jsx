@@ -18,7 +18,7 @@ export default function ReportFullPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-8 mt-32">
+    <div className=" bg-gray-100 py-10 px-4 sm:px-8 mt-56 md:mt-0 rounded-2xl">
       {/* Header */}
       <header className="mb-10 text-center">
         <h1 className="text-3xl sm:text-4xl font-bold text-primary">

@@ -6,7 +6,7 @@ import locationData from "../nepal_location.json";
 import UploadToCloudinary from "../cloudinary/UploadToCloudinary";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { toast } from "react-hot-toast";
+import { toast ,Toaster} from "react-hot-toast";
 import ResponsiblePartyModal from "./ResponsiblePartyModal";
 import "leaflet/dist/leaflet.css";
 
@@ -74,10 +74,7 @@ export default function ReportForm() {
       return;
     }
 
-    if (!responsibleParty) {
-      toast.error("Please add the responsible party details.");
-      return;
-    }
+    
 
     setLoading(true);
     let imageURL = "";
@@ -135,6 +132,45 @@ export default function ReportForm() {
 
   return (
     <div className="relative">
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          // Default options for all toasts
+          className: "rounded-xl bg-gray-900 text-white shadow-lg",
+          style: {
+            padding: "14px 20px",
+            fontWeight: "600",
+            fontSize: "14px",
+          },
+          success: {
+            duration: 4000,
+            style: {
+              background: "#22c55e", // Tailwind green-500
+              color: "white",
+              boxShadow: "0 4px 14px rgba(34, 197, 94, 0.6)",
+            },
+            iconTheme: {
+              primary: "#ffffff",
+              secondary: "#22c55e",
+            },
+          },
+          error: {
+            duration: 6000,
+            style: {
+              background: "#ef4444", // Tailwind red-500
+              color: "white",
+              boxShadow: "0 4px 14px rgba(239, 68, 68, 0.6)",
+            },
+            iconTheme: {
+              primary: "#ffffff",
+              secondary: "#ef4444",
+            },
+          },
+        }}
+      />
+
       {/* Form */}
       <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 max-w-2xl mx-auto relative z-10">
         <h2 className="text-2xl font-bold mb-6 text-primary flex items-center gap-2">
@@ -149,7 +185,7 @@ export default function ReportForm() {
             <select
               value={selectedProvince}
               onChange={handleProvinceChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
               required
             >
               <option value="">Choose a province</option>
@@ -168,7 +204,7 @@ export default function ReportForm() {
               <select
                 value={selectedDistrict}
                 onChange={handleDistrictChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
                 required
               >
                 <option value="">Choose a district</option>
@@ -188,7 +224,7 @@ export default function ReportForm() {
               <select
                 value={selectedMunicipality}
                 onChange={(e) => setSelectedMunicipality(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
                 required
               >
                 <option value="">Choose a municipality</option>
@@ -208,7 +244,7 @@ export default function ReportForm() {
               type="text"
               value={cityDetails}
               onChange={(e) => setCityDetails(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
               required
               placeholder="e.g. Itahari-4, Dharan Road"
             />
@@ -217,7 +253,7 @@ export default function ReportForm() {
           {/* Responsible Party Button */}
           <div>
             <label className="font-semibold flex justify-between items-center">
-              Responsible Party
+              Responsible Party (Optional)
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
@@ -256,7 +292,7 @@ export default function ReportForm() {
               rows="3"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
               placeholder="Describe the pothole..."
             />
           </div>
@@ -280,20 +316,20 @@ export default function ReportForm() {
               type="text"
               value={coordinates}
               onChange={(e) => setCoordinates(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              placeholder="Click 'Pick from map' or enter manually"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mt-3"
+              placeholder="Click 'Pick from map' or enter manually "
             />
           </div>
 
           {/* File Upload */}
           <div>
-            <label className="font-semibold">Upload Image / Video</label>
+            <label className="font-semibold ">Upload Image / Video</label>
             <input
               type="file"
               accept="image/*,video/*"
               onChange={(e) => setFile(e.target.files[0])}
               ref={fileInputRef}
-              className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-orange-600 transition"
+              className="w-full text-sm text-gray-700 file:mr-4 mt-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-orange-600 transition"
             />
             {file && (
               <p className="text-xs text-gray-500 mt-1">
