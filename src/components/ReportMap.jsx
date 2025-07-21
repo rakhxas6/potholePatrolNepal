@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Circle,
+} from "react-leaflet";
 import L from "leaflet";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -16,7 +23,7 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
 
-function UserLocationSetter() {
+function UserLocationSetter({ setUserLocation }) {
   const map = useMap();
 
   useEffect(() => {
@@ -25,30 +32,38 @@ function UserLocationSetter() {
         (position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-          map.setView([userLat, userLng], 14); // center and zoom
+          map.setView([userLat, userLng], 14); // Center and zoom
+          setUserLocation([userLat, userLng]);
         },
         () => {
           console.warn("Failed to get user location.");
         }
       );
     }
-  }, [map]);
+  }, [map, setUserLocation]);
 
   return null;
 }
 
 export default function ReportMap() {
   const [reports, setReports] = useState([]);
+  const [userLocation, setUserLocation] = useState(null);
 
-  // Fetch reports
+  // 🔄 Fetch reports from Firestore
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "reports"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setReports(data);
-    });
+    const unsubscribe = onSnapshot(
+      collection(db, "reports"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setReports(data);
+      },
+      (error) => {
+        console.error("Firestore error:", error);
+      }
+    );
     return () => unsubscribe();
   }, []);
 
@@ -65,17 +80,26 @@ export default function ReportMap() {
         center={[27.7172, 85.324]} // Kathmandu as default
         zoom={12}
         scrollWheelZoom={true}
-        style={{ height: "100%", width: "100%",zIndex: 1}}
+        style={{ height: "100%", width: "100%", zIndex: 1 }}
       >
         <TileLayer
           attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {/* 🧭 Dynamically center to user location */}
-        <UserLocationSetter />
+        {/* 🧭 Center to user location */}
+        <UserLocationSetter setUserLocation={setUserLocation} />
 
-        {/* 📍 Markers from Firestore */}
+        {/* 🔵 Show user's location as a blue circle */}
+        {userLocation && (
+          <Circle
+            center={userLocation}
+            radius={50}
+            pathOptions={{ color: "blue", fillColor: "blue" }}
+          />
+        )}
+
+        {/* 📍 Firestore report markers */}
         {reports.map((report) => {
           const {
             id,
@@ -86,7 +110,7 @@ export default function ReportMap() {
             imageURL,
           } = report;
 
-          if (!coordinates) return null;
+          if (!coordinates || !coordinates.includes(",")) return null;
 
           const [latStr, lngStr] = coordinates.split(",");
           const lat = parseFloat(latStr?.trim());
@@ -109,14 +133,22 @@ export default function ReportMap() {
                     </>
                   )}
                   {imageURL && (
-                    <div style={{ marginTop: "8px" }}>
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                        border: "1px solid #ddd",
+                      }}
+                    >
                       <img
                         src={imageURL}
                         alt="Report"
                         style={{
                           width: "100%",
                           height: "auto",
-                          borderRadius: "8px",
+                          display: "block",
                           objectFit: "cover",
                         }}
                       />
