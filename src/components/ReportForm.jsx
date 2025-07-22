@@ -111,7 +111,7 @@ export default function ReportForm() {
       setMarkerPosition(null);
     } catch (err) {
       toast.error("Error submitting report. Try again.");
-      console.error(err);
+      // console.error(err);
     } finally {
       setLoading(false);
     }
@@ -134,39 +134,6 @@ export default function ReportForm() {
     <div className="relative">
       <Toaster
         position="top-center"
-        reverseOrder={false}
-        gutter={8}
-        toastOptions={{
-          // Default options for all toasts
-          className: "rounded-xl bg-gray-900 text-white shadow-lg",
-          style: {
-            padding: "14px 20px",
-            fontWeight: "600",
-            fontSize: "14px",
-          },
-          success: {
-            duration: 4000,
-            style: {
-              background: "#22c55e", // Tailwind green-500
-              color: "white",
-            },
-            iconTheme: {
-              primary: "#ffffff",
-              secondary: "#22c55e",
-            },
-          },
-          error: {
-            duration: 6000,
-            style: {
-              background: "#ef4444", // Tailwind red-500
-              color: "white",
-            },
-            iconTheme: {
-              primary: "#ffffff",
-              secondary: "#ef4444",
-            },
-          },
-        }}
       />
 
       {/* Form */}

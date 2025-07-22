@@ -3,14 +3,16 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+
+//firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyBaqoZlB6D-5AocS0BupY_IBnLBWOcoL2U",
-  authDomain: "pothole-patrol-nepal.firebaseapp.com",
-  projectId: "pothole-patrol-nepal",
-  storageBucket: "pothole-patrol-nepal.firebasestorage.app",
-  messagingSenderId: "1083567460307",
-  appId: "1:1083567460307:web:daeb2ed0dc38d01caf6926",
-  measurementId: "G-Z7ZSMNRK9G",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 

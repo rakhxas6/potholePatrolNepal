@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 
 export default function ResponsiblePartyModal({
   isOpen,
@@ -7,9 +7,23 @@ export default function ResponsiblePartyModal({
   initialData,
 }) {
   // initialData can be used to prefill form (edit mode)
-  const [name, setName] = useState(initialData?.name || "");
-  const [role, setRole] = useState(initialData?.role || "");
-  const [contact, setContact] = useState(initialData?.contact || "");
+ const [name, setName] = useState("");
+ const [role, setRole] = useState("");
+ const [contact, setContact] = useState("");
+
+
+ // Reset fields when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name || "");
+      setRole(initialData.role || "");
+      setContact(initialData.contact || "");
+    } else {
+      setName("");
+      setRole("");
+      setContact("");
+    }
+  }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
@@ -89,17 +103,6 @@ export default function ResponsiblePartyModal({
           </form>
         </div>
       </div>
-
-      {/* Animation styles (optional) */}
-      <style>{`
-        @keyframes fadeIn {
-          from {opacity: 0; transform: translateY(-10px);}
-          to {opacity: 1; transform: translateY(0);}
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease forwards;
-        }
-      `}</style>
     </>
   );
 } 

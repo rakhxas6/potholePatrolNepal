@@ -1,4 +1,5 @@
 import axios from "axios";
+const cloudId = process.env.REACT_APP_CLOUDINARY_CLOUD_ID
 
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();
@@ -10,7 +11,7 @@ const uploadToCloudinary = async (file) => {
   const resourceType = isVideo ? "video" : "image";
 
   const response = await axios.post(
-    `https://api.cloudinary.com/v1_1/drqnona0k/${resourceType}/upload`,
+    `https://api.cloudinary.com/v1_1/${cloudId}/${resourceType}/upload`,
     formData
   );
 
